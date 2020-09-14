@@ -1,32 +1,25 @@
 function mock
-    if not argparse --stop-nonopt 'e/erase' 'v/version' 'h/help' -- $argv
-        _mock_help
-        return 1
-    else if set -q _flag_help
-        _mock_help
-        return 0
-    else if set -q _flag_version
-        printf '%s\n' 'mock, version 1.0.0'
-        return 0
-    end
-
+    argparse --stop-nonopt 'e/erase' 'h/help' -- $argv
     set -l cmd $argv[1]
     set -l arg $argv[2]
     set -l exitCode $argv[3]
     set -l executedCode $argv[4]
 
-    if set -q _flag_erase
+    if set -q _flag_help
+        _mock_help
+        return 0
+    else if set -q _flag_erase
         if test -z "$arg"
-            functions --erase (functions --all | string match --regex "^_mock_"$cmd"_.*")
+            functions --erase (functions --all | string match --regex ^_mock_"$cmd"_.\*)
+            functions --erase $cmd
+            functions --copy _non_mocked_$cmd $cmd 2>/dev/null # Copy _non_mocked_$cmd -> $cmd if it exists
         else
             functions --erase _mock_"$cmd"_"$arg"
         end
         return 0
     end
 
-    if not set -l type (type --type "$cmd") # cmd is quoted because type doesn't output on no arguments
-        return 1
-    end
+    set -l type (type --type $cmd 2>/dev/null) # If $cmd doesn't exist, don't error
 
     if test "$type" = function && not functions --query _non_mocked_$cmd
         functions --copy $cmd _non_mocked_$cmd
@@ -61,7 +54,6 @@ Usage: mock [options] [command] [argument] [exit code] [executed code]
 
 Options:
   -e or --erase    erase a mocked command/argument
-  -v or --version  print the current mock version
   -h or --help     print this help message
 
 Examples:
