@@ -10,16 +10,16 @@ function mock
         return 0
     end
 
-    set cmd $argv[1]
-    set arg $argv[2]
-    set exit_code $argv[3]
-    set executed_code $argv[4]
+    set -l cmd $argv[1]
+    set -l arg $argv[2]
+    set -l exitCode $argv[3]
+    set -l executedCode $argv[4]
 
     if set -q _flag_erase
-        if test "$arg" = '*'
-            functions --erase $cmd
+        if test -z "$arg"
+            functions --erase (functions --all | string match --regex "^_mock_"$cmd"_.*")
         else
-            functions --erase $cmd'_'$arg
+            functions --erase _mock_"$cmd"_"$arg"
         end
         return 0
     end
@@ -33,16 +33,16 @@ function mock
         functions --copy $cmd _non_mocked_$cmd
     end
 
-    function $cmd'_'$arg --inherit-variable exit_code --inherit-variable executed_code
-        eval $executed_code
-        return $exit_code
+    function _mock_"$cmd"_"$arg" --inherit-variable exitCode --inherit-variable executedCode
+        eval $executedCode
+        return $exitCode
     end
 
     function $cmd -a argument --inherit-variable cmd --inherit-variable type
-        if functions --query $cmd'_'$argument
-            $cmd'_'$argument
+        if functions --query _mock_"$cmd"_"$argument"
+            _mock_"$cmd"_"$argument"
         else if functions --query $cmd'_*'
-            $cmd'_*'
+            mock_"$cmd"_"$argument"'_*'
         else
             switch $type
                 case function
@@ -58,7 +58,7 @@ end
 
 function _mock_help
     printf '%s' '
-Usage: mock [options] [command] [argument] [exit code] [executed_code]
+Usage: mock [options] [command] [argument] [exit code] [executedCode]
 
 Options:
   -e or --erase    erase a mocked command/argument
@@ -66,13 +66,16 @@ Options:
   -h or --help     print this help message
 
 Examples:
+  mock git pull 0 "echo This command echoes succesfully!"
   mock git push 1 "echo This command fails with status 1"
   mock git \* 0 "echo This command acts as a fallback to all git commands"
-  mock -e git push # git push is back to normal
-  mock -e git \* # All git commands are back to normal
+  
+  mock -e git push # Remove git push mock
+  mock -e git \* # Remove the fallback mock
+  mock -e git # Remove all git mocks
 
 Tips:
   - Many mocks can be applied to the same command at the same time with different arguments.
-  - Be sure to escape the asterisk symbol when using it as a fallback (\*)
+  - Be sure to escape the asterisk symbol when using it as a fallback (\*).
 '
 end
