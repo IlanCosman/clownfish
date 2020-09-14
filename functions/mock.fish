@@ -58,7 +58,7 @@ end
 
 function _mock_help
     printf '%s' '
-Usage: mock [options] [command] [argument] [exit code] [executedCode]
+Usage: mock [options] [command] [argument] [exit code] [executed code]
 
 Options:
   -e or --erase    erase a mocked command/argument
