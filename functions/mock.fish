@@ -41,8 +41,8 @@ function mock
     function $cmd -a argument --inherit-variable cmd --inherit-variable type
         if functions --query _mock_"$cmd"_"$argument"
             _mock_"$cmd"_"$argument"
-        else if functions --query $cmd'_*'
-            mock_"$cmd"_"$argument"'_*'
+        else if functions --query _mock_"$cmd"_\*
+            _mock_"$cmd"_\*
         else
             switch $type
                 case function
