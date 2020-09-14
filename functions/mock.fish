@@ -1,5 +1,5 @@
 function mock
-    if not argparse 'e/erase' 'v/version' 'h/help' -- $argv
+    if not argparse --stop-nonopt 'e/erase' 'v/version' 'h/help' -- $argv
         _mock_help
         return 1
     else if set -q _flag_help
@@ -24,8 +24,7 @@ function mock
         return 0
     end
 
-    if not set -l type (type --type $cmd)
-        _mock_help
+    if not set -l type (type --type "$cmd") # cmd is quoted because type doesn't output on no arguments
         return 1
     end
 
