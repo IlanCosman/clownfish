@@ -6,7 +6,6 @@ function mock
 
     if set -q _flag_help
         _mock_help
-        return 0
     else if set -q _flag_erase
         if test -z "$arg"
             functions --erase (functions --all | string match --regex ^_mock_"$cmd"_.\*)
@@ -15,32 +14,31 @@ function mock
         else
             functions --erase _mock_"$cmd"_"$arg"
         end
-        return 0
-    end
+    else
+        set -l type (type --type $cmd 2>/dev/null) # If $cmd doesn't exist, don't error
 
-    set -l type (type --type $cmd 2>/dev/null) # If $cmd doesn't exist, don't error
+        if test "$type" = function && not functions --query _non_mocked_$cmd
+            functions --copy $cmd _non_mocked_$cmd
+        end
 
-    if test "$type" = function && not functions --query _non_mocked_$cmd
-        functions --copy $cmd _non_mocked_$cmd
-    end
+        function _mock_"$cmd"_"$arg" --inherit-variable executedCode
+            eval $executedCode
+        end
 
-    function _mock_"$cmd"_"$arg" --inherit-variable executedCode
-        eval $executedCode
-    end
-
-    function $cmd -a argument --inherit-variable cmd --inherit-variable type
-        if functions --query _mock_"$cmd"_"$argument"
-            _mock_"$cmd"_"$argument"
-        else if functions --query _mock_"$cmd"_\*
-            _mock_"$cmd"_\*
-        else
-            switch $type
-                case function
-                    _non_mocked_$cmd $argv
-                case builtin
-                    builtin $cmd $argv
-                case file
-                    command $cmd $argv
+        function $cmd -a argument --inherit-variable cmd --inherit-variable type
+            if functions --query _mock_"$cmd"_"$argument"
+                _mock_"$cmd"_"$argument"
+            else if functions --query _mock_"$cmd"_\*
+                _mock_"$cmd"_\*
+            else
+                switch $type
+                    case function
+                        _non_mocked_$cmd $argv
+                    case builtin
+                        builtin $cmd $argv
+                    case file
+                        command $cmd $argv
+                end
             end
         end
     end
