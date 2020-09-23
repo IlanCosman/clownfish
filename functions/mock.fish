@@ -8,7 +8,7 @@ function mock
         _mock_help
     else if set -q _flag_erase
         if test -z "$arg"
-            functions --erase (functions --all | string match --regex ^_mock_"$cmd"_.\*)
+            functions --erase (functions --all | string match --regex '^_mock_'$cmd'_.*')
             functions --erase $cmd
             functions --copy _non_mocked_$cmd $cmd 2>/dev/null # Copy _non_mocked_$cmd -> $cmd if it exists
         else
