@@ -17,9 +17,8 @@ function mock
     else
         set -l type (type --type $cmd 2>/dev/null) # If $cmd doesn't exist, don't error
 
-        if test "$type" = function && not functions --query _non_mocked_$cmd
-            functions --copy $cmd _non_mocked_$cmd
-        end
+        # If $cmd isn't a function, or if _non_mocked_$cmd is already defined, don't error
+        functions --copy $cmd _non_mocked_$cmd 2>/dev/null
 
         function _mock_"$cmd"_"$arg" --inherit-variable executedCode
             eval $executedCode
