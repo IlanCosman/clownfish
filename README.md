@@ -5,7 +5,7 @@
 With [fisher][]:
 
 ```console
-fisher add IlanCosman/clownfish
+fisher install IlanCosman/clownfish
 ```
 
 ## Usage
