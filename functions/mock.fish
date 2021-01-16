@@ -20,15 +20,17 @@ function mock
         # If $cmd isn't a function, or if _non_mocked_$cmd is already defined, don't error
         functions --copy $cmd _non_mocked_$cmd 2>/dev/null
 
-        function _mock_"$cmd"_"$arg" --inherit-variable executedCode
+        function _mock_"$cmd"_"$arg" --inherit-variable executedCode --inherit-variable arg
+            set -l argv (string replace -- "$arg " '' "$argv")
+
             eval $executedCode
         end
 
         function $cmd -a argument --inherit-variable cmd --inherit-variable type
             if functions --query _mock_"$cmd"_"$argument"
-                _mock_"$cmd"_"$argument"
+                _mock_"$cmd"_"$argument" $argv
             else if functions --query _mock_"$cmd"_\*
-                _mock_"$cmd"_\*
+                _mock_"$cmd"_\* $argv
             else
                 switch $type
                     case function
