@@ -27,7 +27,7 @@ function mock
         end
 
         function $cmd --inherit-variable cmd --inherit-variable type
-            for i in (seq (count $argv))
+            for i in (seq (count $argv) -1 1) # Counts down from (count $argv)
                 set -l argument "$argv[1..$i]"
                 if functions --query _mock_"$cmd"_"$argument"
                     _mock_"$cmd"_"$argument" $argv
