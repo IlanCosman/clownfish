@@ -1,5 +1,5 @@
 function mock
-    argparse --stop-nonopt 'e/erase' 'h/help' -- $argv
+    argparse --stop-nonopt e/erase h/help -- $argv
     set -l cmd $argv[1]
     set -l arg $argv[2]
     set -l executedCode $argv[3]
@@ -27,12 +27,18 @@ function mock
         end
 
         function $cmd --inherit-variable cmd --inherit-variable type
-            for i in (seq (count $argv) -1 1) # Counts down from (count $argv)
+            # This is looking from most-specific to least specific mock
+            # For example, if we have mocked "foo bar" AND "foo bar baz",
+            # if we run "foo bar baz" then it will run that mock, 
+            # as opposed to the more general "foo bar"
+            set -l i (count $argv)
+            while test $i -gt 0
                 set -l argument "$argv[1..$i]"
                 if functions --query _mock_"$cmd"_"$argument"
                     _mock_"$cmd"_"$argument" $argv
                     return
                 end
+                set i (math $i-1)
             end
 
             if functions --query _mock_"$cmd"_\*
